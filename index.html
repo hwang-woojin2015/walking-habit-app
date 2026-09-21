@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap"
+    rel="stylesheet"
+  >
+
+  <title>걸음 습관 분석</title>
+
+  <style>
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Noto Sans KR", sans-serif;
+      background: linear-gradient(180deg, #e8f4ff, #f5fff9);
+      color: #203a59;
+    }
+
+    /* 위쪽 빨간 경고 화면 */
+    #warningTop {
+      position: fixed;
+      top: 0;
+      left: 0;
+
+      width: 100%;
+      height: 55px;
+
+      background: #ff3333;
+
+      z-index: 9999;
+
+      display: none;
+
+      color: white;
+
+      text-align: center;
+
+      font-size: 16px;
+
+      font-weight: 700;
+
+      line-height: 55px;
+    }
+
+    /* 아래쪽 빨간 경고 화면 */
+    #warningBottom {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+
+      width: 100%;
+      height: 55px;
+
+      background: #ff3333;
+
+      z-index: 9999;
+
+      display: none;
+
+      color: white;
+
+      text-align: center;
+
+      font-size: 16px;
+
+      font-weight: 700;
+
+      line-height: 55px;
+    }
+
+
+    .app {
+      width: 100%;
+      max-width: 430px;
+
+      min-height: 100vh;
+
+      margin: auto;
+
+      padding: 30px 20px;
+    }
+
+
+    .header {
+      text-align: center;
+
+      margin-bottom: 25px;
+    }
+
+
+    .header h1 {
+      margin: 0;
+
+      font-size: 30px;
+
+      font-weight: 700;
+
+      letter-spacing: -1px;
+    }
+
+
+    .subtitle {
+      margin-top: 8px;
+
+      font-size: 14px;
+
+      color: #66809a;
+    }
+
+
+    .card {
+      background: rgba(255, 255, 255, 0.95);
+
+      border-radius: 22px;
+
+      padding: 20px;
+
+      margin-bottom: 16px;
+
+      box-shadow:
+        0 8px 25px rgba(50, 100, 150, 0.10);
+    }
+
+
+    /* 측정 상태 */
+
+    .status {
+      text-align: center;
+
+      padding: 13px;
+
+      border-radius: 14px;
+
+      background: #edf5fb;
+
+      color: #58718a;
+
+      font-size: 15px;
+
+      margin-bottom: 18px;
+    }
+
+
+    .status.active {
+      background: #e3f8ee;
+
+      color: #25835c;
+    }
+
+
+    .sensor-title {
+      font-size: 17px;
+
+      font-weight: 700;
+
+      margin-bottom: 15px;
+    }
+
+
+    .sensor-container {
+      display: grid;
+
+      grid-template-columns:
+        repeat(3, 1fr);
+
+      gap: 8px;
+    }
+
+
+    .sensor-box {
+      background: #f5f9fc;
+
+      border-radius: 14px;
+
+      padding: 14px 5px;
+
+      text-align: center;
+    }
+
+
+    .sensor-name {
+      font-size: 13px;
+
+      color: #71879a;
+    }
+
+
+    .sensor-value {
+      margin-top: 5px;
+
+      font-size: 18px;
+
+      font-weight: 700;
+
+      color: #347fc4;
+    }
+
+
+    .movement {
+      text-align: center;
+
+      margin-top: 18px;
+
+      padding-top: 15px;
+
+      border-top: 1px solid #edf1f4;
+    }
+
+
+    .movement-title {
+      font-size: 14px;
+
+      color: #6d8295;
+    }
+
+
+    .movement-value {
+      margin-top: 5px;
+
+      font-size: 27px;
+
+      font-weight: 700;
+
+      color: #203a59;
+    }
+
+
+    /* 버튼 */
+
+    button {
+      width: 100%;
+
+      border: none;
+
+      border-radius: 18px;
+
+      padding: 16px;
+
+      margin-top: 10px;
+
+      font-family: "Noto Sans KR", sans-serif;
+
+      font-size: 17px;
+
+      font-weight: 700;
+
+      cursor: pointer;
+
+      transition:
+        transform 0.12s ease,
+        box-shadow 0.12s ease,
+        opacity 0.12s ease;
+    }
+
+
+    /* 버튼을 누르는 효과 */
+
+    button:active {
+      transform: scale(0.94);
+
+      box-shadow:
+        0 2px 5px rgba(0, 0, 0, 0.12);
+
+      opacity: 0.85;
+    }
+
+
+    #start {
+      background: #4caf7f;
+
+      color: white;
+
+      box-shadow:
+        0 5px 12px rgba(76, 175, 127, 0.25);
+    }
+
+
+    #stop {
+      background: #ff6b6b;
+
+      color: white;
+
+      box-shadow:
+        0 5px 12px rgba(255, 107, 107, 0.20);
+    }
+
+
+    /* 소리 버튼 */
+
+    #soundButton {
+      background: #edf3f8;
+
+      color: #38556e;
+
+      font-size: 15px;
+
+      margin-top: 12px;
+    }
+
+
+    #soundButton.enabled {
+      background: #dff5ea;
+
+      color: #26815c;
+    }
+
+
+    /* 분석 결과 */
+
+    .result-title {
+      font-size: 16px;
+
+      font-weight: 700;
+    }
+
+
+    #result {
+      margin-top: 10px;
+
+      padding: 15px;
+
+      border-radius: 14px;
+
+      background: #f5f9fc;
+
+      text-align: center;
+
+      font-size: 15px;
+
+      line-height: 1.6;
+    }
+
+
+    @media (max-width: 360px) {
+
+      .header h1 {
+        font-size: 26px;
+      }
+
+      .app {
+        padding: 25px 15px;
+      }
+
+    }
+
+  </style>
+</head>
+
+
+<body>
+
+
+  <!-- 위쪽 빨간색 경고 영역 -->
+  <div id="warningTop">
+    움직임이 크게 감지되었습니다.
+  </div>
+
+
+  <!-- 아래쪽 빨간색 경고 영역 -->
+  <div id="warningBottom">
+    움직임이 크게 감지되었습니다.
+  </div>
+
+
+  <div class="app">
+
+
+    <div class="header">
+
+      <h1>걸음 습관 분석</h1>
+
+      <div class="subtitle">
+        걸을 때의 움직임을 분석해 보세요.
+      </div>
+
+    </div>
+
+
+    <!-- 상태 -->
+
+    <div id="status" class="status">
+      측정하지 않음
+    </div>
+
+
+    <!-- 버튼 -->
+
+    <div class="card">
+
+      <button id="start">
+        측정 시작
+      </button>
+
+      <button id="stop">
+        측정 중지
+      </button>
+
+      <button id="soundButton">
+        소리: 꺼짐
+      </button>
+
+    </div>
+
+
+    <!-- 센서 데이터 -->
+
+    <div class="card">
+
+      <div class="sensor-title">
+        센서 데이터
+      </div>
+
+
+      <div class="sensor-container">
+
+
+        <div class="sensor-box">
+
+          <div class="sensor-name">
+            X값
+          </div>
+
+          <div
+            class="sensor-value"
+            id="x"
+          >
+            0.00
+          </div>
+
+        </div>
+
+
+        <div class="sensor-box">
+
+          <div class="sensor-name">
+            Y값
+          </div>
+
+          <div
+            class="sensor-value"
+            id="y"
+          >
+            0.00
+          </div>
+
+        </div>
+
+
+        <div class="sensor-box">
+
+          <div class="sensor-name">
+            Z값
+          </div>
+
+          <div
+            class="sensor-value"
+            id="z"
+          >
+            0.00
+          </div>
+
+        </div>
+
+
+      </div>
+
+
+      <div class="movement">
+
+        <div class="movement-title">
+          움직임 크기
+        </div>
+
+        <div
+          class="movement-value"
+          id="movement"
+        >
+          0.00
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- 분석 결과 -->
+
+    <div class="card">
+
+      <div class="result-title">
+        분석 결과
+      </div>
+
+      <div id="result">
+        측정을 시작하면 결과가 표시됩니다.
+      </div>
+
+    </div>
+
+
+  </div>
+
+
+<script>
+
+
+let measuring = false;
+
+let soundEnabled = false;
+
+let warningActive = false;
+
+let warningTimer = null;
+
+let lastVibration = 0;
+
+let lastSound = 0;
+
+
+/* 흔들림 기준 */
+
+const SHAKE_LIMIT = 16.0;
+
+
+/* 경고 사이의 최소 시간 */
+
+const WARNING_COOLDOWN = 1000;
+
+
+/* 빨간색 화면이 유지되는 시간 */
+
+const WARNING_DURATION = 5000;
+
+
+const startButton =
+  document.getElementById("start");
+
+
+const stopButton =
+  document.getElementById("stop");
+
+
+const soundButton =
+  document.getElementById("soundButton");
+
+
+const statusText =
+  document.getElementById("status");
+
+
+const resultText =
+  document.getElementById("result");
+
+
+const xText =
+  document.getElementById("x");
+
+
+const yText =
+  document.getElementById("y");
+
+
+const zText =
+  document.getElementById("z");
+
+
+const movementText =
+  document.getElementById("movement");
+
+
+const warningTop =
+  document.getElementById("warningTop");
+
+
+const warningBottom =
+  document.getElementById("warningBottom");
+
+
+/* 소리를 위한 AudioContext */
+
+let audioContext = null;
+
+
+/* 경고음 */
+
+function playWarningSound() {
+
+  if (!soundEnabled) {
+    return;
+  }
+
+
+  const now = Date.now();
+
+
+  if (
+    now - lastSound <
+    WARNING_COOLDOWN
+  ) {
+    return;
+  }
+
+
+  lastSound = now;
+
+
+  if (!audioContext) {
+
+    audioContext =
+      new (
+        window.AudioContext ||
+        window.webkitAudioContext
+      )();
+
+  }
+
+
+  const oscillator =
+    audioContext.createOscillator();
+
+
+  const gain =
+    audioContext.createGain();
+
+
+  oscillator.type = "sine";
+
+  oscillator.frequency.value = 700;
+
+
+  gain.gain.setValueAtTime(
+    0.0001,
+    audioContext.currentTime
+  );
+
+
+  gain.gain.exponentialRampToValueAtTime(
+    0.25,
+    audioContext.currentTime + 0.02
+  );
+
+
+  gain.gain.exponentialRampToValueAtTime(
+    0.0001,
+    audioContext.currentTime + 0.25
+  );
+
+
+  oscillator.connect(gain);
+
+  gain.connect(
+    audioContext.destination
+  );
+
+
+  oscillator.start();
+
+
+  oscillator.stop(
+    audioContext.currentTime + 0.25
+  );
+
+}
+
+
+/* 소리 버튼 */
+
+soundButton.addEventListener(
+  "click",
+  async function() {
+
+    soundEnabled =
+      !soundEnabled;
+
+
+    if (soundEnabled) {
+
+      if (!audioContext) {
+
+        audioContext =
+          new (
+            window.AudioContext ||
+            window.webkitAudioContext
+          )();
+
+      }
+
+
+      if (
+        audioContext.state ===
+        "suspended"
+      ) {
+
+        await audioContext.resume();
+
+      }
+
+
+      soundButton.textContent =
+        "소리: 켜짐";
+
+
+      soundButton.classList.add(
+        "enabled"
+      );
+
+
+    } else {
+
+      soundButton.textContent =
+        "소리: 꺼짐";
+
+
+      soundButton.classList.remove(
+        "enabled"
+      );
+
+    }
+
+  }
+);
+
+
+/* 빨간색 경고 표시 */
+
+function showWarning() {
+
+
+  /*
+    이미 빨간색 경고가 나오고 있으면
+    다시 시작하지 않음
+  */
+
+  if (warningActive) {
+    return;
+  }
+
+
+  warningActive = true;
+
+
+  /* 위쪽 빨간색 표시 */
+
+  warningTop.style.display =
+    "block";
+
+
+  /* 아래쪽 빨간색 표시 */
+
+  warningBottom.style.display =
+    "block";
+
+
+  resultText.textContent =
+    "움직임이 크게 감지되었습니다.";
+
+
+  /* 진동 */
+
+  const now = Date.now();
+
+
+  if (
+    now - lastVibration >
+    WARNING_COOLDOWN
+  ) {
+
+    if (
+      "vibrate" in navigator
+    ) {
+
+      navigator.vibrate(300);
+
+    }
+
+
+    lastVibration = now;
+
+  }
+
+
+  /* 소리 */
+
+  playWarningSound();
+
+
+  /*
+    5초 후 빨간색 제거
+  */
+
+  warningTimer =
+    setTimeout(
+      function() {
+
+
+        warningActive = false;
+
+
+        warningTop.style.display =
+          "none";
+
+
+        warningBottom.style.display =
+          "none";
+
+
+        if (measuring) {
+
+          resultText.textContent =
+            "계속 측정 중입니다.";
+
+        }
+
+
+      },
+      WARNING_DURATION
+    );
+
+}
+
+
+/* 측정 시작 */
+
+startButton.addEventListener(
+  "click",
+  async function() {
+
+
+    /*
+      스마트폰 센서 권한
+    */
+
+    if (
+      typeof DeviceMotionEvent !==
+      "undefined" &&
+
+      typeof DeviceMotionEvent
+        .requestPermission ===
+        "function"
+    ) {
+
+      try {
+
+        const permission =
+          await DeviceMotionEvent
+            .requestPermission();
+
+
+        if (
+          permission !==
+          "granted"
+        ) {
+
+          resultText.textContent =
+            "센서 사용 권한을 허용해주세요.";
+
+          return;
+
+        }
+
+      } catch (error) {
+
+        resultText.textContent =
+          "센서 권한을 확인할 수 없습니다.";
+
+        return;
+
+      }
+
+    }
+
+
+    measuring = true;
+
+
+    statusText.textContent =
+      "측정 중";
+
+
+    statusText.className =
+      "status active";
+
+
+    resultText.textContent =
+      "스마트폰을 주머니에 넣고 걸어보세요.";
+
+
+    window.addEventListener(
+      "devicemotion",
+      sensorChanged
+    );
+
+  }
+);
+
+
+/* 측정 중지 */
+
+stopButton.addEventListener(
+  "click",
+  function() {
+
+
+    measuring = false;
+
+
+    statusText.textContent =
+      "측정하지 않음";
+
+
+    statusText.className =
+      "status";
+
+
+    resultText.textContent =
+      "측정을 중지했습니다.";
+
+
+    /* 경고 제거 */
+
+    warningActive = false;
+
+
+    warningTop.style.display =
+      "none";
+
+
+    warningBottom.style.display =
+      "none";
+
+
+    if (warningTimer) {
+
+      clearTimeout(warningTimer);
+
+      warningTimer = null;
+
+    }
+
+  }
+);
+
+
+/* 센서 데이터 처리 */
+
+function sensorChanged(event) {
+
+
+  if (!measuring) {
+    return;
+  }
+
+
+  const data =
+    event.accelerationIncludingGravity;
+
+
+  if (!data) {
+    return;
+  }
+
+
+  const x =
+    data.x || 0;
+
+
+  const y =
+    data.y || 0;
+
+
+  const z =
+    data.z || 0;
+
+
+  /* 센서값 표시 */
+
+  xText.textContent =
+    x.toFixed(2);
+
+
+  yText.textContent =
+    y.toFixed(2);
+
+
+  zText.textContent =
+    z.toFixed(2);
+
+
+  /*
+    전체 움직임 크기
+
+    √(X² + Y² + Z²)
+  */
+
+  const movement =
+    Math.sqrt(
+      x * x +
+      y * y +
+      z * z
+    );
+
+
+  movementText.textContent =
+    movement.toFixed(2);
+
+
+  /*
+    많이 흔들렸으면 경고
+  */
+
+  if (
+    movement >
+    SHAKE_LIMIT
+  ) {
+
+    showWarning();
+
+  }
+
+}
+
+</script>
+
+</body>
+</html>
