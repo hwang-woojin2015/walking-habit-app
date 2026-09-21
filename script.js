@@ -29,3 +29,9 @@ startButton.addEventListener("click", async () => {
   document.getElementById("result").textContent =
     "센서 측정 중!";
 });
+
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./service-worker.js");
+    });
+}
